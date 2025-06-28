@@ -1,0 +1,96 @@
+name: CI/CD Pipeline
+
+on:
+    pull_request:
+        branches: [main]
+    push:
+        branches: [main]
+
+env:
+    AWS_REGION: ap-northeast-1
+    ECR_REPOSITORY: <your-ecr-repo-name>
+    IMAGE_TAG: ${{ github.sha }}
+
+jobs:
+    build-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            # 1. Lint & UnitTest
+            - name: Set up Go
+              uses: actions/setup-go@v5
+              with:
+                  go-version: "1.22"
+            - name: Lint
+              run: go vet ./...
+            - name: Test
+              run: go test -v ./...
+
+            # 2. Build Docker Image
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Build Docker image
+              run: docker build -t $ECR_REPOSITORY:$IMAGE_TAG src/user-service
+
+            # 3. Trivy - Image Scan
+            - name: Run Trivy vulnerability scanner
+              uses: aquasecurity/trivy-action@v0.11.2
+              with:
+                  image-ref: ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+
+            # 4. Snyk - Dependency Scan
+            - name: Run Snyk to check for vulnerabilities
+              uses: snyk/actions/docker@v3
+              with:
+                  image: ${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+              env:
+                  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+            # 5. KubeLinter - K8s Manifest Scan
+            - name: KubeLinter Scan
+              uses: stackrox/kube-linter-action@v1
+              with:
+                  manifests: infra/k8s/
+
+            # 6. OPA - Policy Check
+            - name: OPA Policy Check
+              uses: open-policy-agent/opa-github-action@v2
+              with:
+                  files: cicd/opa-policies/require-label.rego
+
+            # 7. Login to Amazon ECR
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ${{ env.AWS_REGION }}
+            - name: Login to Amazon ECR
+              id: login-ecr
+              uses: aws-actions/amazon-ecr-login@v2
+
+            # 8. Push Docker image to ECR (mainブランチのみ)
+            - name: Push to ECR
+              if: github.event_name == 'push'
+              run: |
+                  docker tag $ECR_REPOSITORY:$IMAGE_TAG ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+                  docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
+
+    deploy:
+        needs: build-test
+        if: github.event_name == 'push'
+        runs-on: ubuntu-latest
+        steps:
+            - name: ArgoCD Deploy
+              uses: actions/checkout@v4
+            - name: ArgoCD CLI Login
+              run: |
+                  argocd login $ARGOCD_SERVER --username $ARGOCD_USERNAME --password $ARGOCD_PASSWORD --insecure
+              env:
+                  ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+                  ARGOCD_USERNAME: ${{ secrets.ARGOCD_USERNAME }}
+                  ARGOCD_PASSWORD: ${{ secrets.ARGOCD_PASSWORD }}
+            - name: ArgoCD Sync App
+              run: |
+                  argocd app sync user-service

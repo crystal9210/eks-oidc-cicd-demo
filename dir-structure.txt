@@ -1,0 +1,67 @@
+eks-oidc-cicd-demo/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yaml
+├── cicd/
+│   ├── argocd-apps/
+│   │   └── user-service-app.yaml
+│   ├── opa-policies/
+│   │   └── require-label.rego
+│   └── README.md
+├── docs/
+│   ├── architecture.md
+│   ├── api/
+│   │   └── openapi.yaml
+│   ├── security.md
+│   ├── db.md
+│   ├── operations.md
+│   └── README.md
+├── infra/
+│   ├── terraform/
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   └── README.md
+│   ├── helm/
+│   │   └── istio/
+│   │       └── values.yaml
+│   └── k8s/
+│       ├── user-service/
+│       │   ├── deployment.yaml
+│       │   ├── service.yaml
+│       │   ├── ingress.yaml
+│       │   ├── hpa.yaml
+│       │   └── pdb.yaml
+│       ├── istio/
+│       │   ├── gateway.yaml
+│       │   ├── virtualservice.yaml
+│       │   ├── destinationrule.yaml
+│       │   └── authorizationpolicy.yaml
+│       ├── db/
+│       │   ├── rds-operator.yaml
+│       │   └── secret.yaml
+│       └── monitoring/
+│           ├── prometheus.yaml
+│           ├── grafana.yaml
+│           └── kiali.yaml
+├── src/
+│   ├── user-service/
+│   │   ├── main.go
+│   │   ├── Dockerfile
+│   │   ├── go.mod
+│   │   └── README.md
+│   ├── video-service/
+│   │   ├── app.js
+│   │   ├── Dockerfile
+│   │   └── README.md
+│   └── chat-service/
+│       ├── main.py
+│       ├── Dockerfile
+│       └── README.md
+├── scripts/
+│   ├── db-migrate.sh
+│   ├── deploy.sh
+│   └── cleanup.sh
+├── .env.example
+├── README.md
+└── Makefile

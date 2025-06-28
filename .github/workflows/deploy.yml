@@ -1,0 +1,72 @@
+name: Deploy to EKS
+
+on:
+    push:
+        branches:
+            - main # mainブランチへのpushで発火
+
+permissions:
+    id-token: write # OIDCトークン発行のため必須
+    contents: read # リポジトリ内容の読み取り（checkout用）
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest # GitHub Actionsの実行環境
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              # リポジトリのコードをワークスペースにチェックアウト
+              # → 以降のステップでソースやマニフェストを利用できる
+
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                  aws-region: ${{ secrets.AWS_REGION }}
+              # OIDCでAWSに一時認証
+              # secrets.AWS_ROLE_ARN, secrets.AWS_REGIONはGitHubのSecretsで管理
+              # → アクセスキー不要、セキュアな認証
+
+            - name: Set up kubectl
+              uses: azure/setup-kubectl@v4
+              with:
+                  version: "latest"
+              # kubectlコマンドをセットアップ
+              # → EKSクラスタ操作用
+
+            - name: Update kubeconfig
+              run: |
+                  aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+              # kubeconfigを自動生成し、kubectlからEKSクラスタへアクセス可能に
+              # secrets.EKS_CLUSTER_NAMEはGitHub Secretsで管理推奨
+
+            - name: Build Docker image
+              run: |
+                  docker build -t ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} .
+              # アプリケーションのDockerイメージをビルド
+              # ECR_REGISTRY, ECR_REPOSITORYもSecretsで管理
+
+            - name: Login to Amazon ECR
+              run: |
+                  aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+                  docker login --username AWS --password-stdin ${{ secrets.ECR_REGISTRY }}
+              # ECR（Elastic Container Registry）にログイン
+              # → プッシュのための認証
+
+            - name: Push Docker image to ECR
+              run: |
+                  docker push ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}
+              # ビルドしたイメージをECRにプッシュ
+              # → デプロイ用イメージをEKSで利用可能に
+
+            - name: Deploy to EKS
+              run: |
+                  kubectl set image deployment/my-app my-app=${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }} -n default
+                  kubectl rollout status deployment/my-app -n default
+              # EKSのDeploymentリソースのイメージを新しく更新
+              # ロールアウト（デプロイ進行状況）も確認
+
+            - name: Show EKS nodes
+              run: kubectl get nodes
+              # EKSクラスタのノード一覧を表示（動作確認用）
