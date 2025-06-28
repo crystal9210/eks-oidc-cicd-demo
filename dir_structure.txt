@@ -1,0 +1,166 @@
+.
+├── cicd
+│   ├── argocd-app.yaml
+│   ├── argocd-apps
+│   │   ├── chat-service-app.yaml
+│   │   ├── user-service-app.yaml
+│   │   └── video-service-app.yaml
+│   ├── gatekeeper-constraints
+│   │   ├── deny-privileged.yaml
+│   │   └── require-label.yaml
+│   ├── opa-policies
+│   │   ├── deny-privileged.rego
+│   │   └── require-label.rego
+│   └── README.md
+├── create_project_structure.sh
+├── dir_structure.txt
+├── dir-structure.txt
+├── Dockerfile
+├── docs
+│   ├── api
+│   │   ├── openapi-chat.yaml
+│   │   ├── openapi-user.yaml
+│   │   ├── openapi-video.yaml
+│   │   └── openapi.yaml
+│   ├── api-gateway.md
+│   ├── architecture.md
+│   ├── cicd.md
+│   ├── communication.md
+│   ├── db.md
+│   ├── incident-review.md
+│   ├── infra-ai-ml.md
+│   ├── infra-automation.md
+│   ├── infra-compliance.md
+│   ├── infra-cost.md
+│   ├── infra-dr.md
+│   ├── infra-helm.md
+│   ├── infra-incident.md
+│   ├── infra-k8s.md
+│   ├── infra-migration.md
+│   ├── infra-network-advanced.md
+│   ├── infra-network.md
+│   ├── infra-observability.md
+│   ├── infra-performance.md
+│   ├── infra-secrets.md
+│   ├── infra-security-advanced.md
+│   ├── infra-storage.md
+│   ├── infra-terraform.md
+│   ├── monitoring.md
+│   ├── operations.md
+│   ├── README.md
+│   ├── security.md
+│   ├── service-architecture.md
+│   ├── training-onboarding.md
+│   └── user-management.md
+├── infra
+│   ├── helm
+│   │   ├── gatekeeper
+│   │   │   └── values.yaml
+│   │   ├── grafana
+│   │   │   └── values.yaml
+│   │   ├── istio
+│   │   │   └── values.yaml
+│   │   └── prometheus
+│   │       └── values.yaml
+│   ├── k8s
+│   │   ├── chat-service
+│   │   │   ├── deployment.yaml
+│   │   │   ├── hpa.yaml
+│   │   │   ├── ingress.yaml
+│   │   │   ├── pdb.yaml
+│   │   │   ├── secret.yaml
+│   │   │   └── service.yaml
+│   │   ├── db
+│   │   │   ├── rds-operator.yaml
+│   │   │   └── secret.yaml
+│   │   ├── deployment.yaml
+│   │   ├── gateway.yaml
+│   │   ├── istio
+│   │   │   ├── authorizationpolicy.yaml
+│   │   │   ├── destinationrule.yaml
+│   │   │   ├── gateway.yaml
+│   │   │   ├── requestauthentication.yaml
+│   │   │   └── virtualservice.yaml
+│   │   ├── monitoring
+│   │   │   ├── cloudwatch-agent.yaml
+│   │   │   ├── grafana.yaml
+│   │   │   ├── kiali.yaml
+│   │   │   └── prometheus.yaml
+│   │   ├── service.yaml
+│   │   ├── user-service
+│   │   │   ├── deployment.yaml
+│   │   │   ├── hpa.yaml
+│   │   │   ├── ingress.yaml
+│   │   │   ├── pdb.yaml
+│   │   │   ├── secret.yaml
+│   │   │   └── service.yaml
+│   │   ├── user-service-deployment.yaml
+│   │   ├── video-service
+│   │   │   ├── deployment.yaml
+│   │   │   ├── hpa.yaml
+│   │   │   ├── ingress.yaml
+│   │   │   ├── pdb.yaml
+│   │   │   ├── secret.yaml
+│   │   │   └── service.yaml
+│   │   └── virtualservice.yaml
+│   └── terraform
+│       ├── alb.tf
+│       ├── cloudwatch.tf
+│       ├── eks.tf
+│       ├── iam.tf
+│       ├── main.tf
+│       ├── outputs.tf
+│       ├── provider.tf
+│       ├── rds.tf
+│       ├── README.md
+│       ├── s3.tf
+│       └── variables.tf
+├── Makefile
+├── README.md
+├── scripts
+│   ├── cleanup.sh
+│   ├── db-migrate.sh
+│   └── deploy.sh
+├── src
+│   ├── chat-service
+│   │   ├── Dockerfile
+│   │   ├── main.py
+│   │   ├── README.md
+│   │   ├── requirements.txt
+│   │   └── tests
+│   │       ├── e2e
+│   │       │   └── test_chat_api.py
+│   │       ├── integration
+│   │       │   └── test_chat_db.py
+│   │       └── unit
+│   │           ├── test_chat_handler.py
+│   │           └── test_chat_model.py
+│   ├── user-service
+│   │   ├── Dockerfile
+│   │   ├── go.mod
+│   │   ├── main.go
+│   │   ├── README.md
+│   │   └── tests
+│   │       ├── e2e
+│   │       │   └── user_api_test.go
+│   │       ├── integration
+│   │       │   └── user_db_test.go
+│   │       └── unit
+│   │           ├── user_handler_test.go
+│   │           └── user_model_test.go
+│   └── video-service
+│       ├── app.js
+│       ├── Dockerfile
+│       ├── package.json
+│       ├── README.md
+│       └── tests
+│           ├── e2e
+│           │   └── videoApi.test.js
+│           ├── integration
+│           │   └── videoDb.test.js
+│           └── unit
+│               ├── videoController.test.js
+│               └── videoModel.test.js
+└── step1.md
+
+38 directories, 126 files
